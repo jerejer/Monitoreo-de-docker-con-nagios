@@ -1,23 +1,5 @@
 # Implementación de Monitoreo con Nagios, MySQL y NGINX usando Docker
 
-## Estructura del Proyecto
-
-/opt/monitoring/
-├── docker-compose.yml
-├── nagios/
-│   ├── etc/
-│   │   ├── nagios.cfg
-│   │   ├── commands.cfg
-│   │   ├── contacts.cfg
-│   │   ├── hosts.cfg
-│   │   ├── localhost.cfg
-│   │   ├── services.cfg
-│   │   └── resource.cfg
-│   └── var/
-└── nginx/
-    ├── conf/
-    └── html/
-
 
 ## 1. Configuración Inicial
 
