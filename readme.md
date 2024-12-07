@@ -1,18 +1,36 @@
 # Implementación de Monitoreo con Nagios, MySQL y NGINX usando Docker
 
+## Estructura del Proyecto
+```
+/opt/monitoring/
+├── docker-compose.yml
+├── nagios/
+│   ├── etc/
+│   │   ├── nagios.cfg
+│   │   ├── commands.cfg
+│   │   ├── contacts.cfg
+│   │   ├── hosts.cfg
+│   │   ├── localhost.cfg
+│   │   ├── services.cfg
+│   │   └── resource.cfg
+│   └── var/
+└── nginx/
+    ├── conf/
+    └── html/
+```
 
 ## 1. Configuración Inicial
 
 ### 1.1 Crear estructura de directorios
-bash
+```bash
 sudo mkdir -p /opt/monitoring
 cd /opt/monitoring
 sudo mkdir -p nagios/{etc,var}
 sudo mkdir -p nginx/{conf,html}
-
+```
 
 ### 1.2 Docker Compose
-yaml
+```yaml
 version: '3'
 
 services:
@@ -27,7 +45,7 @@ services:
     ports:
       - "3306:3306"
     networks:
-      - red_parcial_docker
+      - red_mi_parcial
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -38,18 +56,18 @@ services:
     ports:
       - "8081:80"
     networks:
-      - red_parcial_docker
+      - red_mi_parcial
 
 networks:
-  :
+  red_mi_parcial:
     external: true
-
+```
 
 ## 2. Archivos de Configuración de Nagios
 
-### 2.1 nagios.cfgred_parcial_docker
-Ubicación: /opt/monitoring/nagios/etc/nagios.cfg
-ini
+### 2.1 nagios.cfg
+Ubicación: `/opt/monitoring/nagios/etc/nagios.cfg`
+```ini
 # Configuración básica
 check_result_path=/opt/nagios/var/spool/checkresults
 resource_file=/opt/nagios/etc/resource.cfg
@@ -62,10 +80,10 @@ cfg_file=/opt/nagios/etc/templates.cfg
 cfg_file=/opt/nagios/etc/hosts.cfg
 cfg_file=/opt/nagios/etc/services.cfg
 cfg_file=/opt/nagios/etc/localhost.cfg
-
+```
 
 ### 2.2 hosts.cfg
-cfg
+```cfg
 # MySQL Server
 define host {
     use                     linux-server
@@ -104,10 +122,10 @@ define hostgroup {
     alias                   Database Servers
     members                 mysql_server
 }
-
+```
 
 ### 2.3 services.cfg
-cfg
+```cfg
 # MySQL Services
 define service {
     use                    generic-service
@@ -149,33 +167,33 @@ define service {
     retry_interval        1
     max_check_attempts    5
 }
-
+```
 
 ### 2.4 resource.cfg
-cfg
+```cfg
 $USER1$=/usr/lib/nagios/plugins
-
+```
 
 ## 3. Configuración de MySQL
 1. Acceder al contenedor MySQL:
-bash
+```bash
 sudo docker-compose exec mysql bash
 mysql -u root -prootpass
-
+```
 
 2. Configurar permisos:
-sql
+```sql
 CREATE USER 'nagios'@'%' IDENTIFIED BY 'nagios123';
 GRANT ALL PRIVILEGES ON *.* TO 'nagios'@'%';
 FLUSH PRIVILEGES;
-
+```
 
 ## 4. Instalación de Plugins en Nagios
-bash
+```bash
 sudo docker-compose exec nagios bash
 apt-get update
 apt-get install -y nagios-plugins
-
+```
 
 ## 5. Acceso Web
 - URL: http://IP-DEL-SERVIDOR:8080/nagios
@@ -186,7 +204,7 @@ apt-get install -y nagios-plugins
 - Monitoreo de MySQL: ✅ Funcionando
   * Connection Status: OK
   * Database: OK
-- Monitoreo de NGINX: ⚠ Parcial
+- Monitoreo de NGINX: ⚠️ Parcial
   * HTTP: En progreso
   * Process: En progreso
 - Monitoreo de Host Local: ✅ Funcionando
@@ -196,19 +214,19 @@ apt-get install -y nagios-plugins
 
 ## 7. Solución de Problemas Comunes
 1. Error de permisos en checkresults:
-bash
+```bash
 mkdir -p /opt/monitoring/nagios/var/spool/checkresults
 chmod -R 775 /opt/monitoring/nagios/var/spool
-
+```
 
 2. Error de acceso MySQL:
-sql
+```sql
 GRANT ALL PRIVILEGES ON *.* TO 'nagios'@'%';
 FLUSH PRIVILEGES;
-
+```
 
 ## 8. Comandos Útiles
-bash
+```bash
 # Verificar configuración de Nagios
 sudo docker-compose exec nagios /opt/nagios/bin/nagios -v /opt/nagios/etc/nagios.cfg
 
@@ -216,4 +234,5 @@ sudo docker-compose exec nagios /opt/nagios/bin/nagios -v /opt/nagios/etc/nagios
 sudo docker-compose restart
 
 # Ver logs
-sudo docker-compose logs nagios
+sudo docker-compose logs nagios
+```
